@@ -6,7 +6,7 @@ services:
     staticPublishPath: build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://your-backend-service.onrender.com/api
+        value: https://volvo-br-9600-zm5p.onrender.com
     routes:
       - type: rewrite
         source: /*
