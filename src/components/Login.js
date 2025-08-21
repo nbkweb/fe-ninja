@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginMerchant, registerMerchant } from '../services/api';
 import '../styles/Login.css';
 
 const Login = ({ setIsAuthenticated, setMerchantInfo }) => {
@@ -16,164 +15,74 @@ const Login = ({ setIsAuthenticated, setMerchantInfo }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
-    try {
-      const response = await loginMerchant({ email, password });
-      if (response.data.success) {
-        // Save merchant info to localStorage
-        localStorage.setItem('merchant_id', response.data.merchant_id);
-        localStorage.setItem('merchant_name', response.data.merchant_name);
-        
-        // Update app state
+
+    // Simple hardcoded login logic
+    setTimeout(() => {
+      if (email === 'admin' && password === 'password') {
+        localStorage.setItem('merchant_id', 'admin');
+        localStorage.setItem('merchant_name', 'Administrator');
+
         setIsAuthenticated(true);
         setMerchantInfo({
-          merchant_id: response.data.merchant_id,
-          merchant_name: response.data.merchant_name
+          merchant_id: 'admin',
+          merchant_name: 'Administrator'
         });
-        
-        // Navigate to terminal
+
         navigate('/terminal');
       } else {
-        setError(response.data.message);
+        setError('Invalid credentials. Try "admin" / "password".');
       }
-    } catch (err) {
-      setError('An error occurred during login. Please try again.');
-      console.error('Login error:', err);
-    } finally {
       setLoading(false);
-    }
+    }, 500); // simulate loading
   };
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    try {
-      const response = await registerMerchant({ merchant_name: merchantName, email, password });
-      if (response.data.success) {
-        // Save merchant info to localStorage
-        localStorage.setItem('merchant_id', response.data.merchant_id);
-        localStorage.setItem('merchant_name', merchantName);
-        
-        // Update app state
-        setIsAuthenticated(true);
-        setMerchantInfo({
-          merchant_id: response.data.merchant_id,
-          merchant_name: merchantName
-        });
-        
-        // Navigate to terminal
-        navigate('/terminal');
-      } else {
-        setError(response.data.message);
-      }
-    } catch (err) {
-      setError('An error occurred during registration. Please try again.');
-      console.error('Registration error:', err);
-    } finally {
-      setLoading(false);
-    }
+    setError("Registration is disabled in admin login mode.");
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
         <h2>Payment Terminal</h2>
-        
+
         {error && <div className="error-message">{error}</div>}
-        
+
         <div className="auth-toggle">
-          <button 
-            className={isLogin ? 'active' : ''} 
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button 
-            className={!isLogin ? 'active' : ''} 
-            onClick={() => setIsLogin(false)}
-          >
-            Register
+          <button className="active" disabled>
+            Admin Login
           </button>
         </div>
-        
-        {isLogin ? (
-          <form onSubmit={handleLogin}>
-            <div className="form-group">
-              <label htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              disabled={loading}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleRegister}>
-            <div className="form-group">
-              <label htmlFor="merchantName">Merchant Name</label>
-              <input
-                type="text"
-                id="merchantName"
-                value={merchantName}
-                onChange={(e) => setMerchantName(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="regEmail">Email</label>
-              <input
-                type="email"
-                id="regEmail"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="form-group">
-              <label htmlFor="regPassword">Password</label>
-              <input
-                type="password"
-                id="regPassword"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              disabled={loading}
-            >
-              {loading ? 'Registering...' : 'Register'}
-            </button>
-          </form>
-        )}
+
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label htmlFor="email">Username</label>
+            <input
+              type="text"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="admin"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="password"
+            />
+          </div>
+
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
       </div>
     </div>
   );
