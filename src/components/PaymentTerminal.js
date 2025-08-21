@@ -20,12 +20,12 @@ const PaymentTerminal = ({ merchantInfo }) => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Load protocols on component mount
   useEffect(() => {
     const fetchProtocols = async () => {
       try {
         const response = await getProtocols();
         if (response.data.success) {
+          console.log("Protocols loaded:", response.data.protocols); // For debug
           setProtocols(response.data.protocols);
         }
       } catch (err) {
@@ -33,7 +33,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
         setError('Failed to load protocols');
       }
     };
-    
+
     fetchProtocols();
   }, []);
 
@@ -42,21 +42,19 @@ const PaymentTerminal = ({ merchantInfo }) => {
     setLoading(true);
     setError('');
     setTransactionResult(null);
-    
+
     try {
-      // Validate approval code based on selected protocol
       if (selectedProtocol) {
         const protocolConfig = protocols[selectedProtocol];
         if (protocolConfig) {
           const expectedLength = protocolConfig.approval_length;
-          
+
           if (approvalCode.length !== expectedLength) {
             setError(`Approval code must be ${expectedLength} digits for selected protocol`);
             setLoading(false);
             return;
           }
-          
-          // Validate that approval code is numeric
+
           if (!/^\d+$/.test(approvalCode)) {
             setError('Approval code must contain only digits');
             setLoading(false);
@@ -64,7 +62,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
           }
         }
       }
-      
+
       const transactionData = {
         amount: parseFloat(amount),
         currency,
@@ -78,9 +76,9 @@ const PaymentTerminal = ({ merchantInfo }) => {
           cvv: cvv
         }
       };
-      
+
       const response = await processTransaction(transactionData);
-      
+
       if (response.data.success) {
         setTransactionResult(response.data.transaction);
       } else {
@@ -109,13 +107,13 @@ const PaymentTerminal = ({ merchantInfo }) => {
           <button className="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </div>
-      
+
       <div className="terminal-content">
         <div className="card transaction-form-card">
           <h2>Process Transaction</h2>
-          
+
           {error && <div className="error-message">{error}</div>}
-          
+
           <form onSubmit={handleProcessTransaction}>
             <div className="form-row">
               <div className="form-group">
@@ -133,7 +131,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                   <option value="BALANCE_INQUIRY">Balance Inquiry</option>
                 </select>
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="paymentMethod">Payment Method</label>
                 <select
@@ -148,24 +146,26 @@ const PaymentTerminal = ({ merchantInfo }) => {
                 </select>
               </div>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="protocol">Protocol</label>
-              <select
-                id="protocol"
-                value={selectedProtocol}
-                onChange={(e) => setSelectedProtocol(e.target.value)}
-                required
-              >
-                <option value="">Select a protocol</option>
-                {Object.keys(protocols).map((protocol) => (
-                  <option key={protocol} value={protocol}>
-                    {protocol}
-                  </option>
-                ))}
-              </select>
+              <div className="protocol-select-wrapper">
+                <select
+                  id="protocol"
+                  value={selectedProtocol}
+                  onChange={(e) => setSelectedProtocol(e.target.value)}
+                  required
+                >
+                  <option value="">Select a protocol</option>
+                  {Object.keys(protocols).map((protocol) => (
+                    <option key={protocol} value={protocol}>
+                      {protocol}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="cardNumber">Card Number</label>
               <input
@@ -177,7 +177,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                 required
               />
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="expiryDate">Expiry Date (MM/YY)</label>
@@ -190,7 +190,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                   required
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="cvv">CVV</label>
                 <input
@@ -203,7 +203,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                 />
               </div>
             </div>
-            
+
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="amount">Amount</label>
@@ -218,7 +218,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                   required
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="currency">Currency</label>
                 <select
@@ -234,7 +234,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                 </select>
               </div>
             </div>
-            
+
             <div className="form-group">
               <label htmlFor="approvalCode">Approval Code</label>
               <input
@@ -247,7 +247,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
               />
               <small>Enter the 4 or 6 digit approval code from customer</small>
             </div>
-            
+
             <div className="form-group">
               <label>
                 <input
@@ -258,7 +258,7 @@ const PaymentTerminal = ({ merchantInfo }) => {
                 Process Online
               </label>
             </div>
-            
+
             <button 
               type="submit" 
               className="btn btn-primary" 
@@ -268,13 +268,13 @@ const PaymentTerminal = ({ merchantInfo }) => {
             </button>
           </form>
         </div>
-        
+
         {transactionResult && (
           <div className="card transaction-result-card">
             <h2>Transaction Result</h2>
             <div className="result-details">
               <p><strong>ID:</strong> {transactionResult.transaction_id}</p>
-              <p><strong>Status:</strong> 
+              <p><strong>Status:</strong>
                 <span className={`status-${transactionResult.status.toLowerCase()}`}>
                   {transactionResult.status}
                 </span>
