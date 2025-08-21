@@ -64,18 +64,19 @@ const PaymentTerminal = ({ merchantInfo }) => {
       }
 
       const transactionData = {
-        amount: parseFloat(amount),
-        currency,
-        transaction_type: transactionType,
-        payment_method: paymentMethod,
-        protocol: selectedProtocol,
-        is_online: isOnline,
-        card_data: {
-          card_number: cardNumber,
-          expiry_date: expiryDate,
-          cvv: cvv
-        }
-      };
+  amount: parseFloat(amount),
+  currency,
+  transaction_type: transactionType,
+  payment_method: paymentMethod,
+  protocol: selectedProtocol,
+  is_online: isOnline,
+  approval_code: approvalCode, // ✅ INCLUDE THIS
+  card_data: {
+    card_number: cardNumber,
+    expiry_date: expiryDate,
+    cvv: cvv
+  }
+};
 
       const response = await processTransaction(transactionData);
 
