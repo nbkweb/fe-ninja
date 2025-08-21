@@ -1,25 +1,46 @@
-import React, { useState } from 'react';
-import './ProtocolSelector.css'; // Optional for styling
+import React, { useEffect, useState } from 'react';
+import './ProtocolSelector.css';
 
 const ProtocolSelector = ({ onSelect }) => {
+  const [protocols, setProtocols] = useState({});
   const [selectedProtocol, setSelectedProtocol] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const PROTOCOLS = {
-    "POS Terminal -101.1 (4-digit approval)": 4,
-    "POS Terminal -101.4 (6-digit approval)": 6,
-    "POS Terminal -101.6 (Pre-authorization)": 6,
-    "POS Terminal -101.7 (4-digit approval)": 4,
-    "POS Terminal -101.8 (PIN-LESS transaction)": 4,
-    "POS Terminal -201.1 (6-digit approval)": 6,
-    "POS Terminal -201.3 (6-digit approval)": 6,
-    "POS Terminal -201.5 (6-digit approval)": 6
-  };
+  useEffect(() => {
+    const fetchProtocols = async () => {
+      try {
+        const response = await fetch('/api/protocols', {
+          credentials: 'include', // send cookies/session info if needed
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data.success) {
+          setProtocols(data.protocols);
+          setError(null);
+        } else {
+          setError('Failed to load protocols');
+        }
+      } catch (err) {
+        setError(`Error: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProtocols();
+  }, []);
 
   const handleChange = (e) => {
     const value = e.target.value;
     setSelectedProtocol(value);
     if (onSelect) onSelect(value);
   };
+
+  if (loading) return <div>Loading protocols...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="protocol-container">
@@ -31,7 +52,7 @@ const ProtocolSelector = ({ onSelect }) => {
         className="protocol-select"
       >
         <option value="">Select a protocol</option>
-        {Object.entries(PROTOCOLS).map(([label, value]) => (
+        {Object.entries(protocols).map(([label, value]) => (
           <option key={label} value={value}>
             {label}
           </option>
@@ -42,3 +63,4 @@ const ProtocolSelector = ({ onSelect }) => {
 };
 
 export default ProtocolSelector;
+
